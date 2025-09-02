@@ -11,13 +11,36 @@
     .brand { color: #e2e8f0; }
     .search-input { background:#0b1020; border-color:#334155; color:#e2e8f0; }
     .search-input::placeholder { color:#94a3b8; }
-    .card { background: #0f172a; color:#e2e8f0; border:1px solid #1e293b; }
+    .card { background: #0f172a; color:#e2e8f0; border:1px solid #1e293b; overflow: hidden; transition: transform 0.3s ease; }
+    .card:hover { transform: scale(1.05); } /* efecto al pasar el mouse */
     .card-price { font-size:1.25rem; font-weight:bold; color:#00ffcc; }
     .modal-price { font-size:2.5rem; font-weight:bold; color:#00ffcc; margin:1rem 0; }
     .footer { color:#94a3b8; }
-    .img-fit { aspect-ratio: 4 / 3; object-fit: cover; }
-    .modal-img { max-height:400px; object-fit:contain; }
-    /* Reducir tamaño de las tarjetas en celulares */
+    .img-fit { aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.3s ease; cursor: pointer; }
+    /* Overlay de imagen fullscreen */
+    .img-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+    .img-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .img-overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
     @media (max-width: 576px) {
       .card { font-size: 0.85rem; }
       .card-title { font-size: 1rem; }
@@ -30,8 +53,7 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
-      <a class="navbar-brand fw-bold brand" href="#">INVENTARIO ELECTR. SXMY</a>
-      <!-- Buscador siempre visible -->.
+      <a class="navbar-brand fw-bold brand" href="#">Inventario Sxmy</a>
       <div class="d-flex gap-2 ms-auto">
         <input id="search" class="form-control search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar">
         <button class="btn btn-outline-light" id="clearSearch">Limpiar</button>
@@ -61,7 +83,11 @@
     <div id="grid" class="row g-3"></div>
   </main>
 
-  <!-- Modal Detalles -->
+  <!-- Overlay fullscreen -->
+  <div id="imgOverlay" class="img-overlay" onclick="closeOverlay()">
+    <img id="overlayImg" src="" alt="Imagen ampliada">
+  </div>
+    <!-- Modal Detalles -->
   <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content" style="background:#0f172a; color:#e2e8f0;">
@@ -81,65 +107,73 @@
   <script>
     // Lista de productos
     const products = [
-{ name: 'Trupan Ruleta', price: 50, img: 'https://i.postimg.cc/sDFDBySJ/Whats-App-Image-2024-09-15-at-6-07-47-PM.jpg', desc: '[Precio x Mayor 40bs] Juego de ruleta educativo.' },
-{ name: 'Trupan Ascensor', price: 35, img: 'https://i.postimg.cc/Df4wymWZ/Whats-App-Image-2024-09-15-at-6-07-47-PM-1.jpg', desc: '[Precio x Mayor 25bs] Modelo de ascensor para proyectos de ingeniería.' },
-{ name: 'Trupan Browser', price: 35, img: 'https://i.postimg.cc/W1TNnn5F/Whats-App-Image-2024-09-15-at-6-07-46-PM.jpg', desc: '[Precio x Mayor 25bs] Proyecto mini-browser de ejemplo.' },
-{ name: 'Trupan Moto', price: 35, img: 'hhttps://i.postimg.cc/3RVrFQqY/Whats-App-Image-2024-09-15-at-6-07-48-PM-1.jpg', desc: '[Precio x Mayor 25bs] Mini moto para proyectos mecánicos.' },
-{ name: 'Trupan Wall-e', price: 40, img: 'https://i.postimg.cc/7Y0khn3m/Captura-de-pantalla-2025-08-29-192513.png', desc: '[Precio x Mayor 30bs] Mini robot Wall-e para demostraciones.' },
-{ name: 'Trupan Caracol', price: 30, img: 'https://i.postimg.cc/j2fx8kVN/Whats-App-Image-2024-09-15-at-6-07-47-PM-2.jpg', desc: '[Precio x Mayor 20bs] Modelo de caracol para proyectos de robótica lenta.' },
-{ name: 'Trupan Tanque', price: 35, img: 'https://i.postimg.cc/bryrzVMD/Captura-de-pantalla-2025-08-29-192513.png', desc: '[Precio x Mayor 25bs] Mini tanque para proyectos de tracción.' },
-{ name: 'Trupan Brazo hidráulico', price: 55, img: 'https://i.postimg.cc/Zqf50dF9/Whats-App-Image-2024-09-15-at-8-36-08-PM.jpg', desc: '[Precio x Mayor 45bs] Mini brazo hidráulico para experimentos.' },
-{ name: 'Motorreductor', price: 25, img: 'https://multimarcas.com.bo/storage/images/productos/4345-0-1719854122.jpg', desc: '[Precio x Mayor 9.50bs] Motorreductor para robótica y pequeños proyectos.' },
-{ name: 'Motor DC 9V', price: 14, img: 'https://5.imimg.com/data5/SELLER/Default/2023/7/329569507/ZR/KT/AS/9484237/3v-9v-dc-micro-toy-motor-500x500.jpg', desc: '[Precio x Mayor 6.5bs] Motor DC de 9V para prototipos.' },
-{ name: 'Porta pila AA', price: 6, img: 'https://epyelectronica.com/wp-content/uploads/2020/09/porta-pilas-aax2.png', desc: '[Precio x Mayor 3bs] Soporte para pilas AA, ideal para prototipos.' },
-{ name: 'Llantas motorreductor', price: 9, img: 'https://marboltec.com/wp-content/uploads/2022/10/Rueda-para-Motor-01.jpg', desc: '[Precio x Mayor 7bs] Llantas para motores TT y robot pequeños.' },
-{ name: 'Porta pila 18650 (1 celda)', price: 13, img: 'https://marboltec.com/wp-content/uploads/2023/11/porta-pilas-18650-x1.jpg', desc: '[Precio x Mayor 8bs] Soporte para una batería 18650.' },
-{ name: 'Cautines punta plata', price: 95, img: 'https://picsum.photos/seed/cautin/200', desc: '[Precio x Mayor 70bs] Cautín profesional con punta de plata para soldaduras.' },
-{ name: 'Baquelita 20x30', price: 35, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 25bs] Placa de baquelita 20x30 cm.' },
-{ name: 'Baquelita 14x22', price: 19, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 15bs] Placa de baquelita 14x22 cm.' },
-{ name: 'Baquelita 10x22', price: 17, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 13bs] Placa de baquelita 10x22 cm.' },
-{ name: 'Baquelita 14x16', price: 16, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 12bs] Placa de baquelita 14x16 cm.' },
-{ name: 'Baquelita 7x10', price: 7, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 4bs] Placa de baquelita 7x10 cm.' },
-{ name: 'Baquelita 10x10', price: 12, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 8bs] Placa de baquelita 10x10 cm.' },
-{ name: 'Placa virgen 10x20', price: 12, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 8bs] Placa de circuito virgen 10x20 cm.' },
-{ name: 'Módulo puente H L298N', price: 29, img: 'https://cdtechnologia.net/3065-large_default/modulo-puente-h-doble-l298n-2a.jpg', desc: '[Precio x Mayor 18bs] Módulo para controlar motores DC bidireccionales.' },
-{ name: 'Pila 18650 caffini', price: 35, img: 'https://epyelectronica.com/wp-content/uploads/Par-de-pilas-Recargable-CAFINI-4.2v-jpg.webp', desc: '[Precio x Mayor 20bs] Batería recargable 18650 de marca Caffini.' },
-{ name: 'Porta pila 18650 (2 celdas)', price: 20, img: 'https://ventas.ardunel.com.bo/680-large_default/porta-pilas-18650-x2-serie-84v-alta-calidad.jpg', desc: '[Precio x Mayor 15bs] Soporte para 2 baterías 18650.' },
-{ name: 'Interruptor doble pulsador', price: 6, img: 'https://laelectronica.com.gt/image/cache/catalog/Productos/Switches%20Y%20PushButtons/Push%20Buttons/Push-Button-Sin-Enclave-Categoria-y-Producto-Azul-1200x1200.jpg', desc: '[Precio x Mayor 2.5bs] Interruptor doble pulsador para control de circuitos.' },
-{ name: 'Protoboard 830', price: 28, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00732-500x500.jpg', desc: '[Precio x Mayor 18bs] Protoboard de 830 puntos para circuitos.' },
-{ name: 'Resistencia Cualquier Valor', price: 1, img: 'https://eloctavobit.com/imagenes/2020/10/1685813560_f0e765e94453cb80e4bb.webp', desc: '[Precio x Mayor 0.10bs] Paquete de 500 resistencias de 1kΩ.' },
-{ name: 'Arduino Uno', price: 105, img: 'https://store.arduino.cc/cdn/shop/files/A000066_01.iso_934x700.jpg', desc: '[Precio x Mayor 75bs] Placa de desarrollo ideal para prototipos y proyectos educativos.' },
-{ name: 'Jumper Pequeños (10 colores)', price: 5, img: 'https://ventas.ardunel.com.bo/449-large_default/cables-jumper-macho-macho-10cm-alta-calidad.jpg', desc: '[Precio x Mayor 10bs] Cable jumper de 10 cm para protoboard.' },
-{ name: 'Bluetooth HC-05', price: 65, img: 'https://marboltec.com/wp-content/uploads/2022/05/Modulo-Bluetooth-HC-05-ME-con-Boton-03.jpg', desc: '[Precio x Mayor 45bs] Comunicación serial inalámbrica para microcontroladores.' },
-{ name: 'Rele 1 canal', price: 20, img: 'https://cdn.awsli.com.br/600x700/468/468162/produto/19414308/26bd484baf.jpg', desc: '[Precio x Mayor 11bs] Rele de 1 canal para controlar dispositivos de mayor voltaje.' },
-{ name: 'Motor DC 3-6v', price: 13, img: 'https://sumador.com/cdn/shop/files/Motor-DC_2048x2048.jpg?v=1755198866', desc: '[Precio x Mayor 6.5bs] Motor DC de 3-9V para robótica básica.' },
-{ name: 'Protoboard 400', price: 25, img: 'https://patzitec.com/wp-content/uploads/2025/01/Protoboard-400_73_11zon-1024x1024.webp', desc: '[Precio x Mayor 12bs] Protoboard de 400 puntos para proyectos pequeños.' },
-{ name: 'Protoboard pequeño', price: 10, img: 'https://www.tecneu.com/cdn/shop/files/mini-protoboard-170-puntos-proto-929317.jpg', desc: '[Precio x Mayor 3bs] Protoboard pequeño para pruebas rápidas.' },
-{ name: 'LM3915', price: 20, img: 'https://marboltec.com/wp-content/uploads/2022/08/6039148acfe6c-1.webp', desc: '[Precio x Mayor 9.5bs] Driver de LEDs para indicadores de nivel.' },
-{ name: 'Potenciómetro (Cualquier Valor)', price: 6, img: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Potentiometer.jpg', desc: '[Precio x Mayor 2.5bs] Potenciómetro de 10kΩ para control de voltaje.' },
-{ name: 'CD4017', price: 10, img: 'https://ventas.ardunel.com.bo/659-large_default/cd4017-contador.jpg', desc: '[Precio x Mayor 4bs] Circuito integrado CD4017 para contadores y secuenciadores.' },
-{ name: 'Diodo zener (cualquier valor)', price: 5, img: 'https://circuitoslistos.com/wp-content/uploads/2020/08/diodo-zener-3v3-13w-do41.jpg', desc: '[Precio x Mayor 2bs] Diodo rectificador para proyectos electrónicos.' },
-{ name: 'Capacitor Ceramico (cualquier valor) ', price: 2.50, img: 'https://www.anypcba.com/upfile/blogs/articles/907/104-ceramic-capacitor.webp', desc: '[Precio x Mayor 1bs] Capacitor cerámico 104 (50uF).' },
-{ name: 'TIP41C', price: 9, img: 'https://altronics.cl/image/image/catalog/productos/electronica/componentes_activos/tip41c/tip41c-1-500x500.webp', desc: '[Precio x Mayor 4bs] Transistor TIP41 para control de motores.' },
-{ name: 'Cable rojo/negro delgado (1m)', price: 5, img: 'https://www.escenografiasparaelbelen.es/recursos/IMG_792852_G.jpg', desc: '[Precio x Mayor 1.5bs] Cable delgado rojo y negro de 200m.' },
-{ name: 'Driver L293D', price: 7, img: 'https://patzitec.com/wp-content/uploads/2024/01/modulo-driver-L293D.webp', desc: '[Precio x Mayor 1.75bs] Driver de motores L293D para control de motores DC.' },
-{ name: 'Motor paso a paso + ULN2003', price: 40, img: 'https://robots-argentina.com.ar/didactica/wp-content/uploads/28BYJ-48-y-ULN2003.png', desc: '[Precio x Mayor 30bs] Motor paso a paso con controlador ULN2003.' },
-{ name: 'Pulsador 2 pines', price: 3, img: 'https://ja-bots.com/wp-content/uploads/2022/04/Pulsador-2-pines-2--320x320.jpg', desc: '[Precio x Mayor 1bs] Pulsador de 2 pines para protoboard.' },
-{ name: 'Interruptor mediano', price: 4, img: 'https://mtlab.pe/wp-content/uploads/PU63.jpeg', desc: '[Precio x Mayor 1.5bs] Interruptor mediano para proyectos eléctricos.' },
-{ name: 'Buzzer o Speaker', price: 8, img: 'https://www.abcomponents.co.uk/wp-content/uploads/2017/10/ABT-460-RC.jpg', desc: '[Precio x Mayor 3.5bs] Buzzer para señalización acústica.' },
-  { name: 'Condensador 100uF 16v ', price: 2.50, img: 'https://www.electrocomponentes.es/8498-large_default/condensadores-electroliticos-100uf-16v-20-5x11mm.jpg', desc: '[Precio x Mayor 1bs]Condensadores 100uF 16V en paquete de 100.' },
-  { name: 'Ácido férrico (bolsa)', price: 40, img: 'https://ventas.ardunel.com.bo/1504-large_default/acido-percloruro-ferrico-en-polvo-para-placa-pcb-100g.jpg', desc: '[Precio x Mayor 20bs]Bolsitas de ácido férrico para grabado de PCB.' },
-  { name: 'Protoboard 400pts', price: 20, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00731-500x500.jpg', desc: '[Precio x Mayor 11,5bs]Protoboard de 400 puntos para prototipos.' },
-  { name: 'N555', price: 5, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8rrd0AMDiI0CdK6H3IEz_pk1_nxJvWUZIUA&s', desc: '[Precio x Mayor 2bs]Paquete de 100 temporizadores NE555.' },
-  { name: '2N2222a', price: 3, img: 'https://tienda.sawers.com.bo/image/cache/catalog/01572-500x500.jpg', desc: '[Precio x Mayor 1bs]Transistor NPN 2N2222a en paquete.' },
+{ name: 'Trupan Ruleta', price: 50, img: 'https://i.postimg.cc/sDFDBySJ/Whats-App-Image-2024-09-15-at-6-07-47-PM.jpg', desc: '[Precio x Mayor 40bs] Juego de ruleta educativa fabricada en trupan. Se utiliza en actividades didácticas y de aprendizaje.' },
+{ name: 'Trupan Ascensor', price: 35, img: 'https://i.postimg.cc/Df4wymWZ/Whats-App-Image-2024-09-15-at-6-07-47-PM-1.jpg', desc: '[Precio x Mayor 25bs] Modelo de ascensor en trupan. Ideal para proyectos de ingeniería y demostración de poleas y contrapesos.' },
+{ name: 'Trupan Browser', price: 35, img: 'https://i.postimg.cc/W1TNnn5F/Whats-App-Image-2024-09-15-at-6-07-46-PM.jpg', desc: '[Precio x Mayor 25bs] Mini proyecto de navegador hecho en trupan. Usado como ejemplo en prácticas de programación y diseño.' },
+{ name: 'Trupan Moto', price: 35, img: 'https://i.postimg.cc/3RVrFQqY/Whats-App-Image-2024-09-15-at-6-07-48-PM-1.jpg', desc: '[Precio x Mayor 25bs] Mini moto en trupan. Se utiliza en proyectos mecánicos y demostraciones de movimiento.' },
+{ name: 'Trupan Wall-e', price: 40, img: 'https://i.postimg.cc/7Y0khn3m/Captura-de-pantalla-2025-08-29-192513.png', desc: '[Precio x Mayor 30bs] Mini robot Wall-e en trupan. Usado en demostraciones de robótica básica.' },
+{ name: 'Trupan Caracol', price: 30, img: 'https://i.postimg.cc/j2fx8kVN/Whats-App-Image-2024-09-15-at-6-07-47-PM-2.jpg', desc: '[Precio x Mayor 20bs] Modelo de caracol en trupan. Representa robótica de movimiento lento y didáctico.' },
+{ name: 'Trupan Tanque', price: 35, img: 'https://i.postimg.cc/bryrzVMD/Captura-de-pantalla-2025-08-29-192513.png', desc: '[Precio x Mayor 25bs] Mini tanque en trupan. Se utiliza en proyectos de tracción y movilidad.' },
+{ name: 'Trupan Brazo hidráulico', price: 55, img: 'https://i.postimg.cc/Zqf50dF9/Whats-App-Image-2024-09-15-at-8-36-08-PM.jpg', desc: '[Precio x Mayor 45bs] Brazo hidráulico en trupan. Muestra principios de hidráulica para levantar y mover objetos.' },
+{ name: 'Motorreductor', price: 25, img: 'https://multimarcas.com.bo/storage/images/productos/4345-0-1719854122.jpg', desc: '[Precio x Mayor 9.50bs] Motor con caja reductora. Convierte velocidad en fuerza, usado en robótica y pequeños vehículos.' },
+{ name: 'Motor DC 9V', price: 14, img: 'https://5.imimg.com/data5/SELLER/Default/2023/7/329569507/ZR/KT/AS/9484237/3v-9v-dc-micro-toy-motor-500x500.jpg', desc: '[Precio x Mayor 6.5bs] Motor eléctrico de corriente continua 9V. Se usa en juguetes, prototipos y ventiladores caseros.' },
+{ name: 'Porta pila AA', price: 6, img: 'https://i2celectronica.com/1800-large_default/porta-pilas-aa-2-pilas.jpg', desc: '[Precio x Mayor 3bs] Porta pilas AA doble. Suministra energía a proyectos pequeños.' },
+{ name: 'Llantas motorreductor', price: 9, img: 'https://marboltec.com/wp-content/uploads/2022/10/Rueda-para-Motor-01.jpg', desc: '[Precio x Mayor 7bs] Ruedas para motores TT. Usadas en robots móviles y carritos.' },
+{ name: 'Porta pila 18650 (1 celda)', price: 13, img: 'https://marboltec.com/wp-content/uploads/2023/11/porta-pilas-18650-x1.jpg', desc: '[Precio x Mayor 8bs] Soporte para batería 18650. Permite alimentar proyectos electrónicos de forma segura.' },
+{ name: 'Cautines punta plata', price: 95, img: 'https://picsum.photos/seed/cautin/200', desc: '[Precio x Mayor 70bs] Cautín con punta de plata. Herramienta para soldadura en electrónica.' },
+//{ name: 'Baquelita 20x30', price: 35, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 25bs] Placa de cobre baquelita 20x30 cm. Usada en fabricación de circuitos impresos (PCB).' },
+//{ name: 'Baquelita 14x22', price: 19, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 15bs] Placa de baquelita 14x22 cm. Material para prototipos de circuitos.' },
+//{ name: 'Baquelita 10x22', price: 17, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 13bs] Placa de baquelita 10x22 cm. Base de cobre para proyectos de electrónica.' },
+//{ name: 'Baquelita 14x16', price: 16, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 12bs] Placa de baquelita 14x16 cm. Se usa para grabado de circuitos.' },
+//{ name: 'Baquelita 7x10', price: 7, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 4bs] Placa de baquelita 7x10 cm. Útil en prototipos electrónicos pequeños.' },
+//{ name: 'Baquelita 10x10', price: 12, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 8bs] Placa de baquelita 10x10 cm. Base de cobre para pruebas de PCB.' },
+{ name: 'Placa virgen - Baquelita 10x20', price: 12, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 8bs] Placa virgen 10x20 cm. Usada en diseño de circuitos electrónicos.' },
+{ name: 'Módulo Puente H L298N', price: 29, img: 'https://cdtechnologia.net/3065-large_default/modulo-puente-h-doble-l298n-2a.jpg', desc: '[Precio x Mayor 18bs] Driver de motores L298N. Permite controlar motores DC en dos direcciones.' },
+{ name: 'Pila 18650 Caffini', price: 35, img: 'https://epyelectronica.com/wp-content/uploads/Par-de-pilas-Recargable-CAFINI-4.2v-jpg.webp', desc: '[Precio x Mayor 20bs] Batería recargable 18650 marca Caffini. Se usa en linternas, robots y proyectos portátiles.' },
+{ name: 'Porta pila 18650 (2 celdas)', price: 20, img: 'https://patzitec.com/wp-content/uploads/2025/01/Porta-Bateria-2x18650_43.webp', desc: '[Precio x Mayor 15bs] Porta pilas para 2 celdas 18650. Da mayor autonomía a proyectos.' },
+{ name: 'Interruptor doble pulsador', price: 6, img: 'https://sc04.alicdn.com/kf/H1d564933da63492ab296fc819138d64c3.jpg', desc: '[Precio x Mayor 2.5bs] Doble pulsador eléctrico. Usado en controles y encendido/apagado.' },
+{ name: 'Resistencia Cualquier Valor', price: 1, img: 'https://eloctavobit.com/imagenes/2020/10/1685813560_f0e765e94453cb80e4bb.webp', desc: '[Precio x Mayor 0.10bs] Resistencias eléctricas. Limitan la corriente en circuitos electrónicos.' },
+{ name: 'Arduino Uno + Cable', price: 115, img: 'https://epyelectronica.com/wp-content/uploads/2020/09/arduino-uno.png', desc: '[Precio x Mayor 75bs] Placa de desarrollo Arduino Uno. Usada para programación y control de proyectos educativos.' },
+{ name: 'Arduino Nano + Cable', price: 95, img: 'https://megatronica.cc/wp-content/uploads/2022/02/61Lrz41NKWL._SL1000_-Copy.jpg', desc: '[Precio x Mayor 80bs] Placa Arduino Nano. Versión compacta para proyectos con espacio limitado.' },
+{ name: 'Correa plana para motor', price: 4, img: 'https://reelec.es/58019-large_default/correa-para-motor-lavadora-universal-1280j5.jpg', desc: '[Precio x Mayor 1,5bs] Placa Arduino Mega. Ofrece más pines y memoria para proyectos complejos.' },
+{ name: 'Jumper Pequeños (10 colores)', price: 5, img: 'https://ventas.ardunel.com.bo/449-large_default/cables-jumper-macho-macho-10cm-alta-calidad.jpg', desc: '[Precio x Mayor 10bs] Cables jumper macho-macho de 10cm. Usados para conexión en protoboard.' },
+{ name: 'Bluetooth HC-05', price: 65, img: 'https://marboltec.com/wp-content/uploads/2022/05/Modulo-Bluetooth-HC-05-ME-con-Boton-03.jpg', desc: '[Precio x Mayor 45bs] Módulo Bluetooth HC-05. Comunicación inalámbrica entre Arduino y celular.' },
+{ name: 'Modulo Rele 1 canal', price: 20, img: 'https://cdn.awsli.com.br/600x700/468/468162/produto/19414308/26bd484baf.jpg', desc: '[Precio x Mayor 11bs] Relé de 1 canal. Permite controlar cargas de alto voltaje con bajo voltaje.' },
+{ name: 'Motor 9v con polea', price: 18, img: 'https://i.postimg.cc/G2Bf97Cq/953aa08f-e15c-43f2-8690-ea9ef2a8b86b.jpg', desc: '[Precio x Mayor 9,5bs] Motor DC 9V con polea. Usado en proyectos de robótica y mecánica.' },
+{ name: 'Motor DC 3-6v', price: 13, img: 'https://sumador.com/cdn/shop/files/Motor-DC_2048x2048.jpg?v=1755198866', desc: '[Precio x Mayor 6.5bs] Motor DC de 3 a 6V. Usado en robótica básica y juguetes.' },
+{ name: 'Protoboard 830', price: 28, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00732-500x500.jpg', desc: '[Precio x Mayor 18bs] Protoboard de 830 puntos. Sirve para prototipar circuitos sin soldadura.' },
+{ name: 'Protoboard 400', price: 25, img: 'https://patzitec.com/wp-content/uploads/2025/01/Protoboard-400_73_11zon-1024x1024.webp', desc: '[Precio x Mayor 12bs] Protoboard de 400 puntos. Para proyectos pequeños de electrónica.' },
+{ name: 'Protoboard pequeño', price: 10, img: 'https://www.tecneu.com/cdn/shop/files/mini-protoboard-170-puntos-proto-929317.jpg', desc: '[Precio x Mayor 3bs] Protoboard de 170 puntos. Ideal para pruebas rápidas.' },
+{ name: 'Circuito Integrado LM3915', price: 20, img: 'https://marboltec.com/wp-content/uploads/2022/08/6039148acfe6c-1.webp', desc: '[Precio x Mayor 9.5bs] Integrado LM3915. Driver de LEDs para indicadores de nivel de voltaje o sonido.' },
+{ name: 'Perilla de Potenciómetro', price: 3, img: 'https://sumador.com/cdn/shop/products/Perillasparapotenciometro_2048x2048.jpg?v=1588479072', desc: '[Precio x Mayor 1.5bs] Perilla para potenciómetro. Mejora el agarre y ajuste de resistencias variables.' },
+{ name: 'Potenciómetro (Cualquier Valor)', price: 6, img: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Potentiometer.jpg', desc: '[Precio x Mayor 2.5bs] Potenciómetro. Resistencia variable usada para ajustar voltaje o volumen.' },
+{ name: 'Circuito Integrado CD4017', price: 10, img: 'https://ventas.ardunel.com.bo/659-large_default/cd4017-contador.jpg', desc: '[Precio x Mayor 4bs] Circuito integrado CD4017. Contador y secuenciador para proyectos electrónicos.' },
+{ name: 'Diodo zener (cualquier valor)', price: 5, img: 'https://circuitoslistos.com/wp-content/uploads/2020/08/diodo-zener-3v3-13w-do41.jpg', desc: '[Precio x Mayor 2bs] Diodo zener. Mantiene un voltaje constante, usado en regulación.' },
+{ name: 'Capacitor Ceramico (cualquier valor)', price: 2.50, img: 'https://www.anypcba.com/upfile/blogs/articles/907/104-ceramic-capacitor.webp', desc: '[Precio x Mayor 1bs] Capacitor cerámico 104. Almacena y filtra energía en circuitos.' },
+{ name: 'Diodo 1N4007', price: 3, img: 'https://marboltec.com/wp-content/uploads/2022/06/Diodo-Rectificador-1n4007-1A1000V-01.jpg', desc: '[Precio x Mayor 1bs] Diodo rectificador 1N4007. Permite el paso de corriente en una sola dirección.' },
+{ name: 'LED (cualquier color)', price: 2, img: 'https://www.make-it.ca/wp-content/uploads/2021/09/5mm-led-set-featured.jpg', desc: '[Precio x Mayor 0.25bs] Diodo emisor de luz (LED). Usado como indicador visual en circuitos.' },
+{ name: 'Transistor TIP31C', price: 9, img: 'https://electrojobsbolivia.com/wp-content/uploads/2024/07/Diseno-sin-titulo-2025-02-28T181347.478.png', desc: '[Precio x Mayor 4bs] Transistor Darlington TIP120. Amplificador de señal y controlador de motores.' },
+{ name: 'Transistor TIP41C', price: 9, img: 'https://altronics.cl/image/image/catalog/productos/electronica/componentes_activos/tip41c/tip41c-1-500x500.webp', desc: '[Precio x Mayor 4bs] Transistor TIP41C. Amplificador y controlador de motores.' },
+{ name: 'Panel Solar 6v 1w', price: 48, img: 'https://i.ebayimg.com/images/g/RBEAAOSwIWZZgeI7/s-l1200.jpg', desc: '[Precio x Mayor 35bs] Panel solar 6V 1W. Convierte luz solar en energía eléctrica para proyectos.' },
+{ name: 'Cable rojo/negro delgado (1m)', price: 5, img: 'https://www.escenografiasparaelbelen.es/recursos/IMG_792852_G.jpg', desc: '[Precio x Mayor 1.5bs] Cable eléctrico rojo y negro. Usado en conexiones básicas de corriente.' },
+{ name: 'Circuito Integrado L293D', price: 14, img: 'https://electronicamade.com/wp-content/uploads/2020/05/circuito-integrado-l293d-driver-motor-puente-h.jpg', desc: '[Precio x Mayor 8bs] Driver de motores L293D. Controla motores DC y paso a paso pequeños.' },
+{ name: 'Motor paso a paso + ULN2003', price: 40, img: 'https://robots-argentina.com.ar/didactica/wp-content/uploads/28BYJ-48-y-ULN2003.png', desc: '[Precio x Mayor 30bs] Motor paso a paso 28BYJ-48 con controlador ULN2003. Usado en proyectos de precisión.' },
+{ name: 'Pulsador 2 pines', price: 3, img: 'https://ja-bots.com/wp-content/uploads/2022/04/Pulsador-2-pines-2--320x320.jpg', desc: '[Precio x Mayor 1bs] Pulsador simple de 2 pines. Activa o desactiva un circuito momentáneamente.' },
+{ name: 'Interruptor mediano', price: 4, img: 'https://mtlab.pe/wp-content/uploads/PU63.jpeg', desc: '[Precio x Mayor 1.5bs] Interruptor mediano. Usado para encender o apagar circuitos eléctricos.' },
+{ name: 'Buzzer o Speaker', price: 8, img: 'https://www.abcomponents.co.uk/wp-content/uploads/2017/10/ABT-460-RC.jpg', desc: '[Precio x Mayor 3.5bs] Buzzer piezoeléctrico. Genera sonidos y alarmas en circuitos.' },
+{ name: 'Condensador 100uF 16v', price: 2.50, img: 'https://www.electrocomponentes.es/8498-large_default/condensadores-electroliticos-100uf-16v-20-5x11mm.jpg', desc: '[Precio x Mayor 1bs] Condensador electrolítico 100uF 16V. Almacena carga y filtra señales.' },
+{ name: 'Ácido férrico (bolsa)', price: 40, img: 'https://ventas.ardunel.com.bo/1504-large_default/acido-percloruro-ferrico-en-polvo-para-placa-pcb-100g.jpg', desc: '[Precio x Mayor 20bs] Ácido férrico. Se usa para grabar circuitos en placas de cobre.' },
+{ name: 'Microfono 9.7mm', price: 12, img: 'https://sumador.com/cdn/shop/products/Microfonoelectret9x7mm1_grande.jpg?v=1588287816', desc: '[Precio x Mayor 6bs] Micrófono electret de 9.7mm. Captura sonido para proyectos de audio.' },
+{ name: 'Circuito Integrado NE555', price: 5, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8rrd0AMDiI0CdK6H3IEz_pk1_nxJvWUZIUA&s', desc: '[Precio x Mayor 2bs] Circuito integrado NE555. Temporizador usado en osciladores y control de tiempo.' },
+  { name: 'Transistor 2N2222a', price: 3, img: 'https://tienda.sawers.com.bo/image/cache/catalog/01572-500x500.jpg', desc: '[Precio x Mayor 1bs]Transistor Bipolar BJT del tipo NPN. Un transistor tiene dos propósitos principalmente, el actuar como un amplificador o como un switch digital. El 2N2222A esta construido con un material semiconductor dopado de 3 capas. Estos dos materiales se les conoce como semiconductor tipo N y tipo P. Es un semiconductor de silicio.' },
   { name: 'Micromotor 500rpm', price: 75, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSylWj7Vo8ICysd9-7jQsBljyElfy1tLpCXog&s', desc: '[Precio x Mayor 55bs]Micromotor de 500 rpm para proyectos mecánicos.' },
-  { name: 'LCD', price: 38, img: 'https://patzitec.com/wp-content/uploads/2024/01/Display-LCD-16x2-Azul.webp', desc: '[Precio x Mayor 22bs]Pantalla LCD para proyectos electrónicos.' },
-  { name: 'Servomotor', price: 40, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00301-500x500.jpg', desc: '[Precio x Mayor 20bs]Servomotor para control de ángulo en robótica.' },
-  { name: 'Sensor infrarrojo', price: 30, img: 'https://epyelectronica.com/wp-content/uploads/Sensor-Infrarrojo-IR-FC-51.jpg', desc: '[Precio x Mayor 15bs]Sensor infrarrojo para detección de obstáculos.' },
-  { name: 'HCSR-04', price: 32, img: 'https://paraarduino.com/wp-content/uploads/2023/10/01.jpg', desc: '[Precio x Mayor 18bs]Sensor ultrasonido HCSR-04 para medir distancias.' },
+  { name: 'Pantalla LCD', price: 38, img: 'https://patzitec.com/wp-content/uploads/2024/01/Display-LCD-16x2-Azul.webp', desc: '[Precio x Mayor 22bs]Pantalla LCD para proyectos electrónicos.' },
+  { name: 'MICRO SERVOMOTOR SG90 180 GRADOS', price: 40, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00301-500x500.jpg', desc: '[Precio x Mayor 20bs]Servomotor para control de ángulo en robótica.' },
+  { name: 'SENSOR INFRARROJO DE OBSTACULO IR', price: 30, img: 'https://epyelectronica.com/wp-content/uploads/Sensor-Infrarrojo-IR-FC-51.jpg', desc: '[Precio x Mayor 15bs]Sensor infrarrojo para detección de obstáculos.' },
+  { name: 'Sensor de distancia Ultrasonico HC-SR04', price: 32, img: 'https://paraarduino.com/wp-content/uploads/2023/10/01.jpg', desc: '[Precio x Mayor 18bs]Sensor ultrasonido HCSR-04 para medir distancias.' },
   { name: 'Jumpers (10 colores)', price: 8, img: 'https://circuitarte.com/wp-content/uploads/2019/05/jumper-cable-de-protoboard-arduino-raspberry-6.png', desc: '[Precio x mayor 10bs 40 coloresJuego de cables jumpers para protoboard.' },
   { name: 'LDR-Fotoresistencia', price: 3.5, img: 'https://educarparaelcambio.com/wp-content/uploads/2017/10/ldr-fotorresistor-arduino.jpg', desc: '[Precio x Mayor 1.6bs] En esta sesión vamos a trabajar con un pequeño gran sensor que nos va a permitir medir la intensidad de la luz en el entorno donde tengamos realizado nuestro montaje, de tal manera que podamos decidir qué acciones a realizar en función de los umbrales de luz u oscuridad que estimemos oportuno..' }
-    ];
+   ];
 
     const grid = document.getElementById('grid');
 
@@ -148,20 +182,22 @@
       grid.innerHTML = '';
       list.forEach((p,idx)=>{
         const col = document.createElement('div');
-        col.className = 'col-6 col-md-4 col-lg-3'; // más pequeñas en móvil
+        col.className = 'col-6 col-md-4 col-lg-3';
         col.innerHTML = `
           <div class="card h-100 shadow-sm">
-            <img src="${p.img}" class="card-img-top img-fit" alt="${p.name}">
+            <img src="${p.img}" class="card-img-top img-fit" alt="${p.name}" onclick="openOverlay('${p.img}')">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title mb-2">${p.name}</h5>
               <div class="mb-2"><span class="card-price">${formatPrice(p)}</span></div>
-              <button class="btn btn-sm btn-outline-light mt-auto" 
-                data-name="${p.name}" 
-                data-price="${p.price}" 
-                data-desc="${p.desc}" 
-                data-img="${p.img}" 
-                data-bs-toggle="modal" 
-                data-bs-target="#detailsModal">Detalles</button>
+              <div class="d-flex justify-content-between mt-auto gap-2">
+                <button class="btn btn-sm btn-outline-light" 
+                  data-name="${p.name}" 
+                  data-price="${p.price}" 
+                  data-desc="${p.desc}" 
+                  data-img="${p.img}" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#detailsModal">Detalles</button>
+              </div>
             </div>
           </div>`;
         grid.appendChild(col);
@@ -183,6 +219,16 @@
       search.value=''; render(products);
     });
 
+    // Overlay imagen
+    function openOverlay(src){
+      const overlay = document.getElementById('imgOverlay');
+      const overlayImg = document.getElementById('overlayImg');
+      overlayImg.src = src;
+      overlay.classList.add('active');
+    }
+    function closeOverlay(){
+      document.getElementById('imgOverlay').classList.remove('active');
+    }
     // Ordenamiento
     document.querySelectorAll('[data-sort]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -205,10 +251,10 @@
       document.getElementById('modalPrice').textContent = Number(btn.getAttribute('data-price')).toLocaleString('es-BO') + ' Bs/u';
     });
 
+
     render(products);
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
