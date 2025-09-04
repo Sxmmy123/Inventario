@@ -79,7 +79,7 @@
     /* Botones en carrito */
   .cart-btn-container {
     display: flex;
-    gap: 5px;
+    gap: 20px; /* Antes estaba 5px, ahora más separación */
     margin-top: 5px;
     justify-content: center;
     flex-wrap: wrap;
@@ -87,17 +87,17 @@
   .cart-btn {
     background: #1e293b;
     border: none;
-    color: hsl(168, 100%, 50%);
-    border-radius: 12px;
-    padding: 2px 6px;
-    font-size: 0.9rem;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 5px 10px; /* un poco más grande para tocar fácilmente en móvil */
+    font-size: 0.95rem;
     cursor: pointer;
-    min-width: 30px;
+    min-width: 35px;
   }
   .cart-btn:hover { background: #334155; }
 
   @media (max-width: 576px) {
-    .cart-btn { padding: 2px 5px; font-size: 0.85rem; min-width: 28px; }
+    .cart-btn { padding: 4px 8px; font-size: 0.9rem; min-width: 32px; }
   }
 </style>
 </head>
