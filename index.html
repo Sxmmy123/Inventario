@@ -14,52 +14,33 @@
     .card { background: #0f172a; color:#e2e8f0; border:1px solid #1e293b; overflow: hidden; transition: transform 0.3s ease; }
     .card:hover { transform: scale(1.05); }
     .card-price { font-size:1.25rem; font-weight:bold; color:#00ffcc; }
-    .modal-price { font-size:2.5rem; font-weight:bold; color:#00ffcc; margin:1rem 0; }
     .footer { color:#94a3b8; }
-    .img-fit { aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.3s ease; cursor: pointer; }
-    .img-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1050;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-    }
-    .img-overlay.active { opacity: 1; visibility: visible; }
-    .img-overlay img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
+    .img-fit { aspect-ratio: 4 / 3; object-fit: cover; cursor: pointer; }
     .qty-control {
       display: flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
     }
     .qty-btn {
       background: #1e293b;
       border: none;
       color: #e2e8f0;
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .qty-display {
       width: 35px;
-      text-align: center;
-      color: #e2e8f0;
-      background: #0f172a;
-      border: 1px solid #334155;
+      height: 35px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .qty-btn:active { transform: scale(0.9); }
+    .qty-display {
+      min-width: 25px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #00ffcc;
     }
     @media (max-width: 576px) {
       .card { font-size: 0.85rem; }
@@ -67,37 +48,57 @@
       .card-price { font-size: 1rem; }
       .card img { height: 120px; object-fit: cover; }
     }
+
+    /* Overlay personalizado */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .overlay-content {
+      text-align: center;
+      color: #e2e8f0;
+      max-width: 800px;
+    }
+    .overlay-content img {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .overlay-content h3 { margin-bottom: 10px; }
+    .overlay-content .card-price { font-size: 1.5rem; margin-bottom: 10px; }
+    .overlay-content p { color: #cbd5e1; }
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top">
     <div class="container d-flex justify-content-between align-items-center">
-      <a class="navbar-brand fw-bold brand" href="#">Inventario Sxmy</a>
+      <a class="navbar-brand fw-bold brand" href="#">INVENTARIO SXMY</a>
       <div class="d-flex gap-2 ms-auto">
         <input id="search" class="form-control search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar">
         <button class="btn btn-outline-light" id="clearSearch">Limpiar</button>
-        <a class="btn btn-info text-dark" href="#cartSection">carrito</a>
+        <a class="btn btn-info text-dark" href="#cartSection">Carrito</a>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <h4 class="text-light"> Total: <span id="cartTotalTop">0.00</span> Bs</h4>
       </div>
     </div>
   </nav>
-  <!-- Main -->
-<main class="container pb-5" style="padding-top: 80px;"> <!-- Ajusta el padding-top a la altura del navbar -->
-  <div id="grid" class="row g-3"></div>
 
-  <!-- Header -->
-  <header class="container py-4">
+  <!-- Total arriba -->
+  <header class="container py-4" style="padding-top: 80px;">
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
         <h1 class="h3 text-light mb-1">Productos <span class="text-info">con los precios</span></h1>
-        <p class="mb-0 footer">para saber mas sobre el producto entra a <strong>Detalles</strong>.</p>
-      </div>
-      <div class="col-lg-4 text-lg-end">
-        <div class="btn-group" role="group">
-          <button class="btn btn-outline-light" data-sort="name">Ordenar A–Z</button>
-          <button class="btn btn-outline-light" data-sort="price-asc">Menor Precio</button>
-          <button class="btn btn-outline-light" data-sort="price-desc">Mayor Precio</button>
-        </div>
+        <p class="mb-0 footer">para saber mas sobre el producto entra a la <strong>Imagen</strong>.</p>
       </div>
     </div>
   </header>
@@ -107,35 +108,21 @@
     <div id="grid" class="row g-3"></div>
     
     <!-- Carrito -->
-  <div id="cartSection" class="mt-4 p-3 rounded" style="background:#0f172a; color:#e2e8f0;">
-    <h4>🛒 Carrito de compras</h4>
-    <ul id="cartList" class="list-group mb-3"></ul>
-    <h5>Total: <span id="cartTotal">0</span> Bs</h5>
-    <button class="btn btn-danger mt-2" id="resetCart">Limpiar Carrito</button>
-  </div>
-</main>
-
-  <!-- Overlay fullscreen -->
-  <div id="imgOverlay" class="img-overlay" onclick="closeOverlay()">
-    <img id="overlayImg" src="" alt="Imagen ampliada">
-  </div>
-
-  <!-- Modal Detalles -->
-  <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content" style="background:#0f172a; color:#e2e8f0;">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalTitle"></h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body text-center">
-          <img id="modalImg" class="img-fluid rounded modal-img mb-3" alt="Imagen producto"/>
-          <div id="modalPrice" class="modal-price"></div>
-          <p id="modalDesc"></p>
-        </div>
-      </div>
+    <div id="cartSection" class="mt-4 p-3 rounded" style="background:#0f172a; color:#e2e8f0;">
+      <h4>🛒 Carrito de compras</h4>
+      <ul id="cartList" class="list-group mb-3"></ul>
+      <h5>Total: <span id="cartTotal">0</span> Bs</h5>
+      <button class="btn btn-danger mt-2" id="resetCart">Restablecer Carrito</button>
     </div>
+  </main>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay">
+    <div class="overlay-content" id="overlayContent"></div>
   </div>
+
+  <!-- Sonido -->
+  <audio id="beepSound" src="https://cdn.pixabay.com/audio/2025/08/05/audio_92c853a122.mp3"></audio>
 
   <script>
     const products = [
@@ -187,7 +174,7 @@
 { name: 'Diodo zener (cualquier valor)', price: 5, img: 'https://circuitoslistos.com/wp-content/uploads/2020/08/diodo-zener-3v3-13w-do41.jpg', desc: '[Precio x Mayor 2bs] Diodo zener. Mantiene un voltaje constante, usado en regulación.' },
 { name: 'Capacitor Ceramico (cualquier valor)', price: 2.50, img: 'https://www.anypcba.com/upfile/blogs/articles/907/104-ceramic-capacitor.webp', desc: '[Precio x Mayor 1bs] Capacitor cerámico 104. Almacena y filtra energía en circuitos.' },
 { name: 'Diodo 1N4007', price: 3, img: 'https://marboltec.com/wp-content/uploads/2022/06/Diodo-Rectificador-1n4007-1A1000V-01.jpg', desc: '[Precio x Mayor 1bs] Diodo rectificador 1N4007. Permite el paso de corriente en una sola dirección.' },
-{ name: 'LED o Diodo LED(cualquier color)', price: 2, img: 'https://www.make-it.ca/wp-content/uploads/2021/09/5mm-led-set-featured.jpg', desc: '[Precio x Mayor 0.25bs] Diodo emisor de luz (LED). Usado como indicador visual en circuitos.' },
+{ name: 'LED o Diodo LED(cualquier color)', price: 1, img: 'https://www.make-it.ca/wp-content/uploads/2021/09/5mm-led-set-featured.jpg', desc: '[Precio x Mayor 0.25bs] Diodo emisor de luz (LED). Usado como indicador visual en circuitos.' },
 { name: 'Transistor TIP31C', price: 9, img: 'https://electrojobsbolivia.com/wp-content/uploads/2024/07/Diseno-sin-titulo-2025-02-28T181347.478.png', desc: '[Precio x Mayor 4bs] Transistor Darlington TIP31C. Amplificador y controlador de motores.' },
 { name: 'Transistor TIP41C', price: 9, img: 'https://altronics.cl/image/image/catalog/productos/electronica/componentes_activos/tip41c/tip41c-1-500x500.webp', desc: '[Precio x Mayor 4bs] Transistor TIP41C. Amplificador y controlador de motores.' },
 { name: 'Panel Solar 6v 1w', price: 48, img: 'https://i.ebayimg.com/images/g/RBEAAOSwIWZZgeI7/s-l1200.jpg', desc: '[Precio x Mayor 35bs] Panel solar 6V 1W. Convierte luz solar en energía eléctrica para proyectos.' },
@@ -215,35 +202,31 @@
   { name: 'LDR-Fotoresistencia', price: 3.50, img: 'https://educarparaelcambio.com/wp-content/uploads/2017/10/ldr-fotorresistor-arduino.jpg', desc: '[Precio x Mayor 1.6bs] En esta sesión vamos a trabajar con un pequeño gran sensor que nos va a permitir medir la intensidad de la luz en el entorno donde tengamos realizado nuestro montaje, de tal manera que podamos decidir qué acciones a realizar en función de los umbrales de luz u oscuridad que estimemos oportuno..' }
    ];
 
-    const grid = document.getElementById('grid');
+   const grid = document.getElementById('grid');
+    const beepSound = document.getElementById("beepSound");
     let cart = [];
+    let currentList = products; // lista actualmente visible
 
-    // Render productos
     function render(list){
+      currentList = list; // actualizar la lista filtrada
       grid.innerHTML = '';
       list.forEach((p,idx)=>{
         const col = document.createElement('div');
         col.className = 'col-6 col-md-4 col-lg-3';
+        const existing = cart.find(item => item.name === p.name);
+        const qty = existing ? existing.qty : 0;
+
         col.innerHTML = `
           <div class="card h-100 shadow-sm">
-            <img src="${p.img}" class="card-img-top img-fit" alt="${p.name}" onclick="openOverlay('${p.img}')">
+            <img src="${p.img}" class="card-img-top img-fit" alt="${p.name}"
+              onclick="showOverlay('${p.name}','${p.price}','${p.desc}','${p.img}')">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title mb-2">${p.name}</h5>
               <div class="mb-2"><span class="card-price">${formatPrice(p)}</span></div>
-              <div class="qty-control mb-2">
-                <button class="qty-btn" onclick="changeQty('qty-${idx}',-1)">-</button>
-                <input type="text" id="qty-${idx}" class="qty-display" value="1" readonly>
-                <button class="qty-btn" onclick="changeQty('qty-${idx}',1)">+</button>
-              </div>
-              <div class="d-flex justify-content-between mt-auto gap-2">
-                <button class="btn btn-sm btn-outline-light" 
-                  data-name="${p.name}" 
-                  data-price="${p.price}" 
-                  data-desc="${p.desc}" 
-                  data-img="${p.img}" 
-                  data-bs-toggle="modal" 
-                  data-bs-target="#detailsModal">Detalles</button>
-                <button class="btn btn-sm btn-success" onclick="addToCart(${idx})">Agregar</button>
+              <div class="qty-control">
+                <button class="qty-btn" onclick="changeCart(${idx}, -1)">-</button>
+                <span class="qty-display" id="qty-${idx}">${qty}</span>
+                <button class="qty-btn" onclick="changeCart(${idx}, 1)">+</button>
               </div>
             </div>
           </div>`;
@@ -253,63 +236,44 @@
 
     function formatPrice(p){ return `${Number(p.price).toLocaleString('es-BO')} Bs/u`; }
 
-    function changeQty(id, delta){
-      const input = document.getElementById(id);
-      let val = parseInt(input.value) || 1;
-      val += delta;
-      if(val < 1) val = 1;
-      input.value = val;
-    }
-
-    function addToCart(idx){
-      const qty = parseInt(document.getElementById(`qty-${idx}`).value) || 1;
-      const product = products[idx];
+    function changeCart(idx, delta){
+      const product = currentList[idx]; // usar la lista filtrada
       const existing = cart.find(item => item.name === product.name);
       if(existing){
-        existing.qty += qty;
-      }else{
-        cart.push({ ...product, qty });
+        existing.qty += delta;
+        if(existing.qty <= 0){
+          cart = cart.filter(item => item.name !== product.name);
+        }
+      } else if(delta > 0){
+        cart.push({ ...product, qty: 1 });
       }
+      beepSound.currentTime = 0;
+      beepSound.play();
       updateCart();
+      render(currentList); // renderizar la lista visible, no todos los productos
     }
 
     function updateCart(){
       const cartList = document.getElementById('cartList');
       const cartTotal = document.getElementById('cartTotal');
+      const cartTotalTop = document.getElementById('cartTotalTop');
       cartList.innerHTML = '';
       let total = 0;
       cart.forEach((item,i)=>{
         const li = document.createElement('li');
         li.className = "list-group-item d-flex justify-content-between align-items-center";
         li.innerHTML = `
-          <div>
-            ${item.qty} x ${item.name}
-            <div class="btn-group btn-group-sm ms-2">
-              <button class="btn btn-outline-light" onclick="modifyCart(${i},-1)">-</button>
-              <button class="btn btn-outline-light" onclick="modifyCart(${i},1)">+</button>
-              <button class="btn btn-danger" onclick="removeFromCart(${i})">🗑</button>
-            </div>
-          </div>
+          <div>${item.qty} x ${item.name}</div>
           <span>${(item.qty * item.price).toFixed(2)} Bs</span>
         `;
         cartList.appendChild(li);
         total += item.qty * item.price;
       });
       cartTotal.textContent = total.toFixed(2);
+      cartTotalTop.textContent = total.toFixed(2);
     }
 
-    function modifyCart(index, delta){
-      cart[index].qty += delta;
-      if(cart[index].qty < 1){ cart[index].qty = 1; }
-      updateCart();
-    }
-
-    function removeFromCart(index){
-      cart.splice(index,1);
-      updateCart();
-    }
-
-    document.getElementById('resetCart').addEventListener('click', ()=>{ cart=[]; updateCart(); });
+    document.getElementById('resetCart').addEventListener('click', ()=>{ cart=[]; updateCart(); render(currentList); });
 
     // Buscador
     const search = document.getElementById('search');
@@ -318,37 +282,29 @@
       const filtered = products.filter(p => p.name.toLowerCase().includes(q));
       render(filtered);
     });
-    document.getElementById('clearSearch').addEventListener('click', ()=>{ search.value=''; render(products); });
+    document.getElementById('clearSearch').addEventListener('click', ()=>{
+      search.value = '';
+      render(products);
+    });
 
     // Overlay
-    function openOverlay(src){ document.getElementById('overlayImg').src = src; document.getElementById('imgOverlay').classList.add('active'); }
-    function closeOverlay(){ document.getElementById('imgOverlay').classList.remove('active'); }
+    const overlay = document.getElementById('overlay');
+    const overlayContent = document.getElementById('overlayContent');
 
-    // Ordenamiento
-    document.querySelectorAll('[data-sort]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const mode = btn.getAttribute('data-sort');
-        let sorted = [...products];
-        if(mode==='name') sorted.sort((a,b)=> a.name.localeCompare(b.name));
-        if(mode==='price-asc') sorted.sort((a,b)=> a.price - b.price);
-        if(mode==='price-desc') sorted.sort((a,b)=> b.price - a.price);
-        render(sorted);
-      });
-    });
+    function showOverlay(name, price, desc, img){
+      overlayContent.innerHTML = `
+        <img src="${img}" alt="${name}">
+        <h3>${name}</h3>
+        <div class="card-price">${Number(price).toLocaleString('es-BO')} Bs/u</div>
+        <p>${desc}</p>
+      `;
+      overlay.style.display = 'flex';
+    }
 
-    // Modal
-    const detailsModal = document.getElementById('detailsModal');
-    detailsModal.addEventListener('show.bs.modal', (event)=>{
-      const btn = event.relatedTarget;
-      document.getElementById('modalTitle').textContent = btn.getAttribute('data-name');
-      document.getElementById('modalDesc').textContent = btn.getAttribute('data-desc');
-      document.getElementById('modalImg').src = btn.getAttribute('data-img');
-      document.getElementById('modalPrice').textContent = Number(btn.getAttribute('data-price')).toLocaleString('es-BO') + ' Bs/u';
-    });
+    overlay.addEventListener('click', ()=>{ overlay.style.display = 'none'; });
 
     render(products);
   </script>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
