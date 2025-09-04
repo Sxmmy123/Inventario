@@ -12,12 +12,11 @@
     .search-input { background:#0b1020; border-color:#334155; color:#e2e8f0; }
     .search-input::placeholder { color:#94a3b8; }
     .card { background: #0f172a; color:#e2e8f0; border:1px solid #1e293b; overflow: hidden; transition: transform 0.3s ease; }
-    .card:hover { transform: scale(1.05); } /* efecto al pasar el mouse */
+    .card:hover { transform: scale(1.05); }
     .card-price { font-size:1.25rem; font-weight:bold; color:#00ffcc; }
     .modal-price { font-size:2.5rem; font-weight:bold; color:#00ffcc; margin:1rem 0; }
     .footer { color:#94a3b8; }
     .img-fit { aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.3s ease; cursor: pointer; }
-    /* Overlay de imagen fullscreen */
     .img-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -31,15 +30,36 @@
       visibility: hidden;
       transition: opacity 0.3s ease;
     }
-    .img-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .img-overlay.active { opacity: 1; visibility: visible; }
     .img-overlay img {
       max-width: 90%;
       max-height: 90%;
       border-radius: 8px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .qty-btn {
+      background: #1e293b;
+      border: none;
+      color: #e2e8f0;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .qty-display {
+      width: 35px;
+      text-align: center;
+      color: #e2e8f0;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      font-size: 0.9rem;
     }
     @media (max-width: 576px) {
       .card { font-size: 0.85rem; }
@@ -51,22 +71,26 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand fw-bold brand" href="#">Inventario Sxmy</a>
       <div class="d-flex gap-2 ms-auto">
         <input id="search" class="form-control search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar">
         <button class="btn btn-outline-light" id="clearSearch">Limpiar</button>
+        <a class="btn btn-info text-dark" href="#cartSection">carrito</a>
       </div>
     </div>
   </nav>
+  <!-- Main -->
+<main class="container pb-5" style="padding-top: 80px;"> <!-- Ajusta el padding-top a la altura del navbar -->
+  <div id="grid" class="row g-3"></div>
 
   <!-- Header -->
   <header class="container py-4">
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
         <h1 class="h3 text-light mb-1">Productos <span class="text-info">con los precios</span></h1>
-        <p class="mb-0 footer">para saber mas sobre el productor entra a  <strong>Detalles</strong>.</p>
+        <p class="mb-0 footer">para saber mas sobre el producto entra a <strong>Detalles</strong>.</p>
       </div>
       <div class="col-lg-4 text-lg-end">
         <div class="btn-group" role="group">
@@ -81,13 +105,22 @@
   <!-- Grid -->
   <main class="container pb-5">
     <div id="grid" class="row g-3"></div>
-  </main>
+    
+    <!-- Carrito -->
+  <div id="cartSection" class="mt-4 p-3 rounded" style="background:#0f172a; color:#e2e8f0;">
+    <h4>🛒 Carrito de compras</h4>
+    <ul id="cartList" class="list-group mb-3"></ul>
+    <h5>Total: <span id="cartTotal">0</span> Bs</h5>
+    <button class="btn btn-danger mt-2" id="resetCart">Limpiar Carrito</button>
+  </div>
+</main>
 
   <!-- Overlay fullscreen -->
   <div id="imgOverlay" class="img-overlay" onclick="closeOverlay()">
     <img id="overlayImg" src="" alt="Imagen ampliada">
   </div>
-    <!-- Modal Detalles -->
+
+  <!-- Modal Detalles -->
   <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content" style="background:#0f172a; color:#e2e8f0;">
@@ -105,7 +138,6 @@
   </div>
 
   <script>
-    // Lista de productos
     const products = [
 { name: 'Plantilla de Trupan Ruleta', price: 50, img: 'https://i.postimg.cc/sDFDBySJ/Whats-App-Image-2024-09-15-at-6-07-47-PM.jpg', desc: '[Precio x Mayor 40bs] Juego de ruleta educativa fabricada en trupan. Se utiliza en actividades didácticas y de aprendizaje.' },
 { name: 'Plantilla de Trupan Ascensor', price: 35, img: 'https://i.postimg.cc/Df4wymWZ/Whats-App-Image-2024-09-15-at-6-07-47-PM-1.jpg', desc: '[Precio x Mayor 25bs] Modelo de ascensor en trupan. Ideal para proyectos de ingeniería y demostración de poleas y contrapesos.' },
@@ -118,7 +150,8 @@
 { name: 'Plantilla de Trupan Base Auto', price: 25, img: 'https://img.lazcdn.com/g/p/4bdf573d74b9beb992beb5590f06ae62.jpg_720x720q80.jpg', desc: '[Precio x Mayor 10bs] Base para auto en trupan. Usada como chasis para proyectos de vehículos pequeños.' },
 { name: 'Motorreductor', price: 25, img: 'https://multimarcas.com.bo/storage/images/productos/4345-0-1719854122.jpg', desc: '[Precio x Mayor 9.50bs] Motor con caja reductora. Convierte velocidad en fuerza, usado en robótica y pequeños vehículos.' },
 { name: 'Motor DC 9V', price: 14, img: 'https://5.imimg.com/data5/SELLER/Default/2023/7/329569507/ZR/KT/AS/9484237/3v-9v-dc-micro-toy-motor-500x500.jpg', desc: '[Precio x Mayor 6.5bs] Motor eléctrico de corriente continua 9V. Se usa en juguetes, prototipos y ventiladores caseros.' },
-{ name: 'Porta pila AA', price: 6, img: 'https://i2celectronica.com/1800-large_default/porta-pilas-aa-2-pilas.jpg', desc: '[Precio x Mayor 3bs] Porta pilas AA doble. Suministra energía a proyectos pequeños.' },
+{ name: 'Porta pila AA (para 1 pila)', price: 5, img: 'https://sumador.com/cdn/shop/products/Portapilapara1bateria18650-min_2048x2048.jpg?v=1589128653', desc: '[Precio x Mayor 2bs] Porta pilas AA simple. Suministra energía a proyectos pequeños.' },
+{ name: 'Porta pila AA (para 2 pilas)', price: 6, img: 'https://i2celectronica.com/1800-large_default/porta-pilas-aa-2-pilas.jpg', desc: '[Precio x Mayor 3bs] Porta pilas AA doble. Suministra energía a proyectos pequeños.' },
 { name: 'Llantas motorreductor', price: 9, img: 'https://marboltec.com/wp-content/uploads/2022/10/Rueda-para-Motor-01.jpg', desc: '[Precio x Mayor 5bs] Ruedas para motores TT. Usadas en robots móviles y carritos.' },
 { name: 'Porta pila 18650 (1 celda)', price: 13, img: 'https://marboltec.com/wp-content/uploads/2023/11/porta-pilas-18650-x1.jpg', desc: '[Precio x Mayor 8bs] Soporte para batería 18650. Permite alimentar proyectos electrónicos de forma segura.' },
 { name: 'Cautine punta plata', price: 95, img: 'https://i.postimg.cc/Vs7pWDnF/123.jpg', desc: '[Precio x Mayor 70bs] Cautín con punta de plata. Herramienta para soldadura en electrónica.' },
@@ -130,7 +163,7 @@
 { name: 'Sensor PIR HC-SR501', price: 25, img: 'https://www.prometec.net/wp-content/uploads/2015/09/HC-SR501.jpg', desc: '[Precio x Mayor 18bs] Sensor de movimiento PIR HC-SR501. Detecta presencia humana para alarmas y automatización.' },
 { name: 'Display 7 segmentos 1 dígito', price: 8, img: 'https://tienda.sawers.com.bo/image/cache/catalog/00138-500x500.jpg', desc: '[Precio x Mayor 3bs] Display de 7 segmentos 1 digito. Usado para mostrar números en proyectos electrónicos.' },
 { name: 'Display 7 segmentos 2 dígitos', price: 19, img: 'https://tienda.sawers.com.bo/image/cache/catalog/01166-500x500.jpg', desc: '[Precio x Mayor 6bs] Display de 7 segmentos 2 dígitos. Ideal para relojes y contadores.' },
-{ name: 'Placa virgen - Baquelita 10x20', price: 12, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 8bs] Placa virgen 10x20 cm. Usada en diseño de circuitos electrónicos.' },
+{ name: 'Placa virgen - Baquelita 10x20', price: 18, img: 'https://cdtechnologia.net/27879-large_default/baquelita-virgen-para-prototipo-pcb-de-cobre.jpg', desc: '[Precio x Mayor 12bs] Placa virgen 10x20 cm. Usada en diseño de circuitos electrónicos.' },
 { name: 'Módulo Puente H L298N', price: 29, img: 'https://cdtechnologia.net/3065-large_default/modulo-puente-h-doble-l298n-2a.jpg', desc: '[Precio x Mayor 18bs] Driver de motores L298N. Permite controlar motores DC en dos direcciones.' },
 { name: 'Pila 18650 Caffini', price: 35, img: 'https://epyelectronica.com/wp-content/uploads/Par-de-pilas-Recargable-CAFINI-4.2v-jpg.webp', desc: '[Precio x Mayor 20bs] Batería recargable 18650 marca Caffini. Se usa en linternas, robots y proyectos portátiles.' },
 { name: 'Porta pila 18650 (2 celdas)', price: 20, img: 'https://patzitec.com/wp-content/uploads/2025/01/Porta-Bateria-2x18650_43.webp', desc: '[Precio x Mayor 15bs] Porta pilas para 2 celdas 18650. Da mayor autonomía a proyectos.' },
@@ -164,10 +197,10 @@
 { name: 'Pulsador 2 pines', price: 3, img: 'https://ja-bots.com/wp-content/uploads/2022/04/Pulsador-2-pines-2--320x320.jpg', desc: '[Precio x Mayor 1bs] Pulsador simple de 2 pines. Activa o desactiva un circuito momentáneamente.' },
 { name: 'Interruptor mediano', price: 4, img: 'https://mtlab.pe/wp-content/uploads/PU63.jpeg', desc: '[Precio x Mayor 1.5bs] Interruptor mediano. Usado para encender o apagar circuitos eléctricos.' },
 { name: 'Buzzer o Speaker', price: 8, img: 'https://www.abcomponents.co.uk/wp-content/uploads/2017/10/ABT-460-RC.jpg', desc: '[Precio x Mayor 3.5bs] Buzzer piezoeléctrico. Genera sonidos y alarmas en circuitos.' },
-{ name: 'Condensador 10uF 16v', price: 2, img: 'https://www.electrocomponentes.es/8492-large_default/condensadores-electroliticos-10uf-16v-5x11mm.jpg', desc: '[Precio x Mayor 1bs] Condensador electrolítico 10uF 16V. Almacena carga y filtra señales.' },
+{ name: 'Condensador 10uF 16v', price: 2, img: 'https://itecelectronic.lk/wp-content/uploads/2024/09/10uf-16v.jpg', desc: '[Precio x Mayor 1bs] Condensador electrolítico 10uF 16V. Almacena carga y filtra señales.' },
 { name: 'Condensador 100uF 16v', price: 2.50, img: 'https://www.electrocomponentes.es/8498-large_default/condensadores-electroliticos-100uf-16v-20-5x11mm.jpg', desc: '[Precio x Mayor 1bs] Condensador electrolítico 100uF 16V. Almacena carga y filtra señales.' },
-{ name: 'Condensador 470uF 16v', price: 4, img: 'https://www.electrocomponentes.es/8504-large_default/condensadores-electroliticos-470uf-16v-12-5x20mm.jpg', desc: '[Precio x Mayor 2bs] Condensador electrolítico 470uF 16V. Almacena carga y filtra señales.' },
-{ name: 'Condensador 1000uF 16v', price: 6, img: 'https://www.electrocomponentes.es/8510-large_default/condensadores-electroliticos-1000uf-16v-12-5x25mm.jpg', desc: '[Precio x Mayor 2.5bs] Condensador electrolítico 1000uF 16V. Almacena carga y filtra señales.' },
+{ name: 'Condensador 470uF 16v', price: 4, img: 'https://5.imimg.com/data5/ECOM/Default/2024/6/427341870/VN/HQ/YB/2755789/470uf-16v-capacitor-0e2c557b-ffc0-445e-8acf-11f4f54af584.jpg', desc: '[Precio x Mayor 2bs] Condensador electrolítico 470uF 16V. Almacena carga y filtra señales.' },
+{ name: 'Condensador 1000uF 16v', price: 6, img: 'https://www.electrocomponentes.es/8530-large_default/condensadores-electroliticos-1000uf-16v-20-8x16mm.jpg', desc: '[Precio x Mayor 2.5bs] Condensador electrolítico 1000uF 16V. Almacena carga y filtra señales.' },
 { name: 'Acido ferrico (bolsa)', price: 40, img: 'https://ventas.ardunel.com.bo/1504-large_default/acido-percloruro-ferrico-en-polvo-para-placa-pcb-100g.jpg', desc: '[Precio x Mayor 20bs] Ácido férrico. Se usa para grabar circuitos en placas de cobre.' },
 { name: 'Microfono 9.7mm', price: 12, img: 'https://sumador.com/cdn/shop/products/Microfonoelectret9x7mm1_grande.jpg?v=1588287816', desc: '[Precio x Mayor 6bs] Micrófono electret de 9.7mm. Captura sonido para proyectos de audio.' },
 { name: 'Circuito Integrado NE555', price: 5, img: 'https://m.media-amazon.com/images/I/31u53G-0YnL._UF894,1000_QL80_.jpg', desc: '[Precio x Mayor 2bs] Circuito integrado NE555. Temporizador usado en osciladores y control de tiempo.' },
@@ -183,8 +216,9 @@
    ];
 
     const grid = document.getElementById('grid');
+    let cart = [];
 
-    // Renderizado de productos
+    // Render productos
     function render(list){
       grid.innerHTML = '';
       list.forEach((p,idx)=>{
@@ -196,6 +230,11 @@
             <div class="card-body d-flex flex-column">
               <h5 class="card-title mb-2">${p.name}</h5>
               <div class="mb-2"><span class="card-price">${formatPrice(p)}</span></div>
+              <div class="qty-control mb-2">
+                <button class="qty-btn" onclick="changeQty('qty-${idx}',-1)">-</button>
+                <input type="text" id="qty-${idx}" class="qty-display" value="1" readonly>
+                <button class="qty-btn" onclick="changeQty('qty-${idx}',1)">+</button>
+              </div>
               <div class="d-flex justify-content-between mt-auto gap-2">
                 <button class="btn btn-sm btn-outline-light" 
                   data-name="${p.name}" 
@@ -204,6 +243,7 @@
                   data-img="${p.img}" 
                   data-bs-toggle="modal" 
                   data-bs-target="#detailsModal">Detalles</button>
+                <button class="btn btn-sm btn-success" onclick="addToCart(${idx})">Agregar</button>
               </div>
             </div>
           </div>`;
@@ -211,9 +251,65 @@
       });
     }
 
-    function formatPrice(p){
-      return `${Number(p.price).toLocaleString('es-BO')} Bs/u`;
+    function formatPrice(p){ return `${Number(p.price).toLocaleString('es-BO')} Bs/u`; }
+
+    function changeQty(id, delta){
+      const input = document.getElementById(id);
+      let val = parseInt(input.value) || 1;
+      val += delta;
+      if(val < 1) val = 1;
+      input.value = val;
     }
+
+    function addToCart(idx){
+      const qty = parseInt(document.getElementById(`qty-${idx}`).value) || 1;
+      const product = products[idx];
+      const existing = cart.find(item => item.name === product.name);
+      if(existing){
+        existing.qty += qty;
+      }else{
+        cart.push({ ...product, qty });
+      }
+      updateCart();
+    }
+
+    function updateCart(){
+      const cartList = document.getElementById('cartList');
+      const cartTotal = document.getElementById('cartTotal');
+      cartList.innerHTML = '';
+      let total = 0;
+      cart.forEach((item,i)=>{
+        const li = document.createElement('li');
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <div>
+            ${item.qty} x ${item.name}
+            <div class="btn-group btn-group-sm ms-2">
+              <button class="btn btn-outline-light" onclick="modifyCart(${i},-1)">-</button>
+              <button class="btn btn-outline-light" onclick="modifyCart(${i},1)">+</button>
+              <button class="btn btn-danger" onclick="removeFromCart(${i})">🗑</button>
+            </div>
+          </div>
+          <span>${(item.qty * item.price).toFixed(2)} Bs</span>
+        `;
+        cartList.appendChild(li);
+        total += item.qty * item.price;
+      });
+      cartTotal.textContent = total.toFixed(2);
+    }
+
+    function modifyCart(index, delta){
+      cart[index].qty += delta;
+      if(cart[index].qty < 1){ cart[index].qty = 1; }
+      updateCart();
+    }
+
+    function removeFromCart(index){
+      cart.splice(index,1);
+      updateCart();
+    }
+
+    document.getElementById('resetCart').addEventListener('click', ()=>{ cart=[]; updateCart(); });
 
     // Buscador
     const search = document.getElementById('search');
@@ -222,20 +318,12 @@
       const filtered = products.filter(p => p.name.toLowerCase().includes(q));
       render(filtered);
     });
-    document.getElementById('clearSearch').addEventListener('click', ()=>{
-      search.value=''; render(products);
-    });
+    document.getElementById('clearSearch').addEventListener('click', ()=>{ search.value=''; render(products); });
 
-    // Overlay imagen
-    function openOverlay(src){
-      const overlay = document.getElementById('imgOverlay');
-      const overlayImg = document.getElementById('overlayImg');
-      overlayImg.src = src;
-      overlay.classList.add('active');
-    }
-    function closeOverlay(){
-      document.getElementById('imgOverlay').classList.remove('active');
-    }
+    // Overlay
+    function openOverlay(src){ document.getElementById('overlayImg').src = src; document.getElementById('imgOverlay').classList.add('active'); }
+    function closeOverlay(){ document.getElementById('imgOverlay').classList.remove('active'); }
+
     // Ordenamiento
     document.querySelectorAll('[data-sort]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -248,7 +336,7 @@
       });
     });
 
-    // Modal Detalles
+    // Modal
     const detailsModal = document.getElementById('detailsModal');
     detailsModal.addEventListener('show.bs.modal', (event)=>{
       const btn = event.relatedTarget;
@@ -258,10 +346,10 @@
       document.getElementById('modalPrice').textContent = Number(btn.getAttribute('data-price')).toLocaleString('es-BO') + ' Bs/u';
     });
 
-
     render(products);
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
