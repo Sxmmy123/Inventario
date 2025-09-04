@@ -75,6 +75,19 @@
     .overlay-content h3 { margin-bottom: 10px; }
     .overlay-content .card-price { font-size: 1.5rem; margin-bottom: 10px; }
     .overlay-content p { color: #cbd5e1; }
+
+    /* Botones en carrito */
+    .cart-btn {
+      background: #1e293b;
+      border: none;
+      color: #e2e8f0;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cart-btn:hover { background: #334155; }
   </style>
 </head>
 <body>
@@ -88,7 +101,7 @@
         <a class="btn btn-info text-dark" href="#cartSection">Carrito</a>
       </div>
       <div class="col-lg-4 text-lg-end">
-        <h4 class="text-light"> Total: <span id="cartTotalTop">0.00</span> Bs</h4>
+        <h4 class="text-light">Total: <span id="cartTotalTop">0.00</span> Bs</h4>
       </div>
     </div>
   </nav>
@@ -98,7 +111,7 @@
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
         <h1 class="h3 text-light mb-1">Productos <span class="text-info">con los precios</span></h1>
-        <p class="mb-0 footer">para saber mas sobre el producto entra a la <strong>Imagen</strong>.</p>
+        <p class="mb-0 footer">para saber más sobre el producto entra a <strong>Detalles</strong>.</p>
       </div>
     </div>
   </header>
@@ -174,7 +187,7 @@
 { name: 'Diodo zener (cualquier valor)', price: 5, img: 'https://circuitoslistos.com/wp-content/uploads/2020/08/diodo-zener-3v3-13w-do41.jpg', desc: '[Precio x Mayor 2bs] Diodo zener. Mantiene un voltaje constante, usado en regulación.' },
 { name: 'Capacitor Ceramico (cualquier valor)', price: 2.50, img: 'https://www.anypcba.com/upfile/blogs/articles/907/104-ceramic-capacitor.webp', desc: '[Precio x Mayor 1bs] Capacitor cerámico 104. Almacena y filtra energía en circuitos.' },
 { name: 'Diodo 1N4007', price: 3, img: 'https://marboltec.com/wp-content/uploads/2022/06/Diodo-Rectificador-1n4007-1A1000V-01.jpg', desc: '[Precio x Mayor 1bs] Diodo rectificador 1N4007. Permite el paso de corriente en una sola dirección.' },
-{ name: 'LED o Diodo LED(cualquier color)', price: 1, img: 'https://www.make-it.ca/wp-content/uploads/2021/09/5mm-led-set-featured.jpg', desc: '[Precio x Mayor 0.25bs] Diodo emisor de luz (LED). Usado como indicador visual en circuitos.' },
+{ name: 'LED o Diodo LED(cualquier color)', price: 2, img: 'https://www.make-it.ca/wp-content/uploads/2021/09/5mm-led-set-featured.jpg', desc: '[Precio x Mayor 0.25bs] Diodo emisor de luz (LED). Usado como indicador visual en circuitos.' },
 { name: 'Transistor TIP31C', price: 9, img: 'https://electrojobsbolivia.com/wp-content/uploads/2024/07/Diseno-sin-titulo-2025-02-28T181347.478.png', desc: '[Precio x Mayor 4bs] Transistor Darlington TIP31C. Amplificador y controlador de motores.' },
 { name: 'Transistor TIP41C', price: 9, img: 'https://altronics.cl/image/image/catalog/productos/electronica/componentes_activos/tip41c/tip41c-1-500x500.webp', desc: '[Precio x Mayor 4bs] Transistor TIP41C. Amplificador y controlador de motores.' },
 { name: 'Panel Solar 6v 1w', price: 48, img: 'https://i.ebayimg.com/images/g/RBEAAOSwIWZZgeI7/s-l1200.jpg', desc: '[Precio x Mayor 35bs] Panel solar 6V 1W. Convierte luz solar en energía eléctrica para proyectos.' },
@@ -202,13 +215,13 @@
   { name: 'LDR-Fotoresistencia', price: 3.50, img: 'https://educarparaelcambio.com/wp-content/uploads/2017/10/ldr-fotorresistor-arduino.jpg', desc: '[Precio x Mayor 1.6bs] En esta sesión vamos a trabajar con un pequeño gran sensor que nos va a permitir medir la intensidad de la luz en el entorno donde tengamos realizado nuestro montaje, de tal manera que podamos decidir qué acciones a realizar en función de los umbrales de luz u oscuridad que estimemos oportuno..' }
    ];
 
-   const grid = document.getElementById('grid');
+    const grid = document.getElementById('grid');
     const beepSound = document.getElementById("beepSound");
     let cart = [];
     let currentList = products; // lista actualmente visible
 
     function render(list){
-      currentList = list; // actualizar la lista filtrada
+      currentList = list;
       grid.innerHTML = '';
       list.forEach((p,idx)=>{
         const col = document.createElement('div');
@@ -237,7 +250,7 @@
     function formatPrice(p){ return `${Number(p.price).toLocaleString('es-BO')} Bs/u`; }
 
     function changeCart(idx, delta){
-      const product = currentList[idx]; // usar la lista filtrada
+      const product = currentList[idx];
       const existing = cart.find(item => item.name === product.name);
       if(existing){
         existing.qty += delta;
@@ -250,7 +263,7 @@
       beepSound.currentTime = 0;
       beepSound.play();
       updateCart();
-      render(currentList); // renderizar la lista visible, no todos los productos
+      render(currentList);
     }
 
     function updateCart(){
@@ -264,13 +277,38 @@
         li.className = "list-group-item d-flex justify-content-between align-items-center";
         li.innerHTML = `
           <div>${item.qty} x ${item.name}</div>
-          <span>${(item.qty * item.price).toFixed(2)} Bs</span>
+          <span>
+            ${(item.qty * item.price).toFixed(2)} Bs
+            <button class="cart-btn" onclick="changeCartFromCart(${i}, 1)">+</button>
+            <button class="cart-btn" onclick="changeCartFromCart(${i}, -1)">-</button>
+            <button class="cart-btn" onclick="removeFromCart(${i})">x</button>
+          </span>
         `;
         cartList.appendChild(li);
         total += item.qty * item.price;
       });
       cartTotal.textContent = total.toFixed(2);
       cartTotalTop.textContent = total.toFixed(2);
+    }
+
+    function changeCartFromCart(idx, delta){
+      const item = cart[idx];
+      item.qty += delta;
+      if(item.qty <= 0){
+        cart.splice(idx, 1);
+      }
+      beepSound.currentTime = 0;
+      beepSound.play();
+      updateCart();
+      render(currentList);
+    }
+
+    function removeFromCart(idx){
+      cart.splice(idx, 1);
+      beepSound.currentTime = 0;
+      beepSound.play();
+      updateCart();
+      render(currentList);
     }
 
     document.getElementById('resetCart').addEventListener('click', ()=>{ cart=[]; updateCart(); render(currentList); });
@@ -308,4 +346,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
