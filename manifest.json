@@ -1,19 +1,19 @@
 {
   "name": "Inventario SXMY",
   "short_name": "Inventario",
-  "description": "Galería de productos con precios",
+  "description": "Aplicación para ver y comprar productos",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#272727",
   "theme_color": "#0f172a",
   "icons": [
     {
-      "src": "./images/2.png",
+      "src": "images/2.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./images/1.png",
+      "src": "images/1.png",
       "sizes": "512x512",
       "type": "image/png"
     }
