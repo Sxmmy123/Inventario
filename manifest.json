@@ -1,8 +1,8 @@
 {
   "name": "Inventario SXMY",
   "short_name": "Inventario",
-  "description": "Galería de productos con precios y carrito de compras.",
-  "start_url": "/Inventario/",
+  "description": "Galería de productos con precios",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
