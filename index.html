@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
+  <link rel="icon" href="https://i.postimg.cc/nh0QcHwS/1.png" type="image/png">
   <style>
     body { background: #272727; }
     .navbar { background: #0f172a; }
@@ -19,101 +20,35 @@
     .footer { color:#94a3b8; }
     .img-fit { aspect-ratio: 4 / 3; object-fit: cover; cursor: pointer; }
     .qty-control {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: auto;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: auto;
     }
     .qty-btn {
-      background: #1e293b;
-      border: none;
-      color: #e2e8f0;
-      width: 35px;
-      height: 35px;
-      border-radius: 6px;
-      font-size: 20px;
-      cursor: pointer;
-      transition: transform 0.1s;
+      background: #1e293b; border: none; color: #e2e8f0; width: 35px; height: 35px; border-radius: 6px; font-size: 20px; cursor: pointer; transition: transform 0.1s;
     }
     .qty-btn:active { transform: scale(0.9); }
-    .qty-display {
-      min-width: 25px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1rem;
-      color: #00ffcc;
-    }
+    .qty-display { min-width: 25px; text-align: center; font-weight: bold; font-size: 1rem; color: #00ffcc; }
     @media (max-width: 576px) {
       .card { font-size: 0.85rem; }
       .card-title { font-size: 1rem; }
       .card-price { font-size: 1rem; }
       .card img { height: 120px; object-fit: cover; }
     }
-
     .overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      padding: 20px;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px;
     }
-    .overlay-content {
-      text-align: center;
-      color: #e2e8f0;
-      max-width: 800px;
-    }
-    .overlay-content img {
-      max-width: 100%;
-      max-height: 70vh;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
+    .overlay-content { text-align: center; color: #e2e8f0; max-width: 800px; }
+    .overlay-content img { max-width: 100%; max-height: 70vh; border-radius: 10px; margin-bottom: 15px; }
     .overlay-content h3 { margin-bottom: 10px; }
     .overlay-content .card-price { font-size: 1.5rem; margin-bottom: 10px; }
     .overlay-content p { color: #cbd5e1; }
-
-    .cart-btn-container {
-      display: flex;
-      gap: 20px;
-      margin-top: 5px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .cart-btn {
-      background: #1e293b;
-      border: none;
-      color: #e2e8f0;
-      border-radius: 6px;
-      padding: 5px 10px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      min-width: 35px;
-    }
+    .cart-btn-container { display: flex; gap: 20px; margin-top: 5px; justify-content: center; flex-wrap: wrap; }
+    .cart-btn { background: #1e293b; border: none; color: #e2e8f0; border-radius: 6px; padding: 5px 10px; font-size: 0.95rem; cursor: pointer; min-width: 35px; }
     .cart-btn:hover { background: #334155; }
-
-    @media (max-width: 576px) {
-      .cart-btn { padding: 4px 8px; font-size: 0.9rem; min-width: 32px; }
-    }
-
-    .fly-img {
-      position: fixed;
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-      z-index: 3000;
-      pointer-events: none;
-      transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
-    }
+    @media (max-width: 576px) { .cart-btn { padding: 4px 8px; font-size: 0.9rem; min-width: 32px; } }
+    .fly-img { position: fixed; width: 80px; height: 80px; object-fit: cover; border-radius: 8px; z-index: 3000; pointer-events: none; transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out; }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand fw-bold brand" href="#">INVENTARIO SXMY</a>
@@ -132,7 +67,7 @@
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
         <h1 class="h3 text-light mb-1">Productos <span class="text-info">con los precios</span></h1>
-        <p class="mb-0 footer">para saber más sobre el producto entra a la <strong>Imagen</strong> preciona <strong>Carrito</strong> para saber todo lo que agregaste vuelve a precionarlo para ver todos los productos de nuevo</p>
+        <p class="mb-0 footer">Para saber más sobre el producto entra a la <strong>Imagen</strong>. Presiona <strong>Carrito</strong> para ver todo lo que agregaste y vuelve a presionarlo para ver todos los productos de nuevo.</p>
       </div>
     </div>
   </header>
@@ -150,9 +85,7 @@
   <div id="overlay" class="overlay">
     <div class="overlay-content" id="overlayContent"></div>
   </div>
-
   <audio id="beepSound" src="https://cdn.pixabay.com/audio/2025/08/05/audio_92c853a122.mp3"></audio>
-
   <script>
     const products = [
 { name: 'Plantilla de Trupan Ruleta', price: 50, img: 'https://i.postimg.cc/sDFDBySJ/Whats-App-Image-2024-09-15-at-6-07-47-PM.jpg', desc: '[Precio x Mayor 40bs] Juego de ruleta educativa fabricada en trupan. Se utiliza en actividades didácticas y de aprendizaje.' },
@@ -231,7 +164,7 @@
   { name: 'Jumpers (10 colores) 20cm', price: 8, img: 'https://circuitarte.com/wp-content/uploads/2019/05/jumper-cable-de-protoboard-arduino-raspberry-6.png', desc: '[Precio x mayor 10bs 40 colores] Juego de Cables jumper  de 20cm para protoboard.' },
   { name: 'LDR-Fotoresistencia', price: 3.50, img: 'https://educarparaelcambio.com/wp-content/uploads/2017/10/ldr-fotorresistor-arduino.jpg', desc: '[Precio x Mayor 1.6bs] En esta sesión vamos a trabajar con un pequeño gran sensor que nos va a permitir medir la intensidad de la luz en el entorno donde tengamos realizado nuestro montaje, de tal manera que podamos decidir qué acciones a realizar en función de los umbrales de luz u oscuridad que estimemos oportuno..' }
    ];
-   const grid = document.getElementById('grid');
+  const grid = document.getElementById('grid');
     const beepSound = document.getElementById("beepSound");
     const toggleCartBtn = document.getElementById("toggleCartBtn");
     let cart = [];
@@ -275,9 +208,7 @@
       const existing = cart.find(item => item.name === product.name);
       if(existing){
         existing.qty += delta;
-        if(existing.qty <= 0){
-          cart = cart.filter(item => item.name !== product.name);
-        }
+        if(existing.qty <= 0){ cart = cart.filter(item => item.name !== product.name); }
       } else if(delta > 0){
         cart.push({ ...product, qty: 1 });
       }
@@ -290,13 +221,10 @@
 
     function animateFly(imgSrc){
       const img = document.createElement("img");
-      img.src = imgSrc;
-      img.className = "fly-img";
+      img.src = imgSrc; img.className = "fly-img";
       document.body.appendChild(img);
-      const startX = window.innerWidth/2;
-      const startY = window.innerHeight/2;
-      img.style.left = startX+"px";
-      img.style.top = startY+"px";
+      const startX = window.innerWidth/2, startY = window.innerHeight/2;
+      img.style.left = startX+"px"; img.style.top = startY+"px";
       const target = document.getElementById("cartTotalTop").getBoundingClientRect();
       const targetX = target.left + window.scrollX;
       const targetY = target.top + window.scrollY;
@@ -334,63 +262,30 @@
     }
 
     function changeCartFromCart(idx, delta){
-      const item = cart[idx];
-      item.qty += delta;
-      if(item.qty <= 0){
-        cart.splice(idx, 1);
-      }
-      beepSound.currentTime = 0;
-      beepSound.play();
-      updateCart();
-      render(currentList);
+      const item = cart[idx]; item.qty += delta;
+      if(item.qty <= 0){ cart.splice(idx, 1); }
+      beepSound.currentTime = 0; beepSound.play(); updateCart(); render(currentList);
     }
 
-    function removeFromCart(idx){
-      cart.splice(idx, 1);
-      beepSound.currentTime = 0;
-      beepSound.play();
-      updateCart();
-      render(currentList);
-    }
+    function removeFromCart(idx){ cart.splice(idx, 1); beepSound.currentTime = 0; beepSound.play(); updateCart(); render(currentList); }
 
     document.getElementById('resetCart').addEventListener('click', ()=>{ cart=[]; updateCart(); render(currentList); });
 
     const search = document.getElementById('search');
-    search.addEventListener('input', ()=>{
-      const q = search.value.toLowerCase();
-      const filtered = products.filter(p => p.name.toLowerCase().includes(q));
-      render(filtered);
-    });
-    document.getElementById('clearSearch').addEventListener('click', ()=>{
-      search.value = '';
-      render(products);
-    });
+    search.addEventListener('input', ()=>{ render(products.filter(p=>p.name.toLowerCase().includes(search.value.toLowerCase()))); });
+    document.getElementById('clearSearch').addEventListener('click', ()=>{ search.value=''; render(products); });
 
     const overlay = document.getElementById('overlay');
     const overlayContent = document.getElementById('overlayContent');
-
     function showOverlay(name, price, desc, img){
-      overlayContent.innerHTML = `
-        <img src="${img}" alt="${name}">
-        <h3>${name}</h3>
-        <div class="card-price">${Number(price).toLocaleString('es-BO')} Bs/u</div>
-        <p>${desc}</p>`;
+      overlayContent.innerHTML = `<img src="${img}" alt="${name}"><h3>${name}</h3><div class="card-price">${Number(price).toLocaleString('es-BO')} Bs/u</div><p>${desc}</p>`;
       overlay.style.display = 'flex';
     }
-
     overlay.addEventListener('click', ()=>{ overlay.style.display = 'none'; });
 
     toggleCartBtn.addEventListener("click", ()=>{
       showingCart = !showingCart;
-      if(showingCart){
-        if(cart.length === 0){
-          render([]); 
-        } else {
-          render(cart);
-        }
-      } else {
-        render(products);
-      }
+      render(showingCart ? (cart.length ? cart : []) : products);
     });
 
     render(products);
