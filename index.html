@@ -291,18 +291,50 @@
 
     render(products);
 
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(() => {
-          console.log('Service Worker registrado con éxito');
-        })
-        .catch((error) => {
-          console.log('Error al registrar el Service Worker:', error);
-        });
-    });
-  }
+    // Registro del Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(() => {
+            console.log('Service Worker registrado con éxito');
+          })
+          .catch((error) => {
+            console.log('Error al registrar el Service Worker:', error);
+          });
+      });
+    }
   </script>
+
+  <!-- Notificación de actualización del SW -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              const updateBanner = document.createElement('div');
+              updateBanner.style.position = 'fixed';
+              updateBanner.style.bottom = '20px';
+              updateBanner.style.right = '20px';
+              updateBanner.style.background = '#0f172a';
+              updateBanner.style.color = 'white';
+              updateBanner.style.padding = '10px 20px';
+              updateBanner.style.borderRadius = '5px';
+              updateBanner.style.cursor = 'pointer';
+              updateBanner.style.zIndex = 9999;
+              updateBanner.textContent = '¡Nueva versión disponible! Haz clic para actualizar.';
+              updateBanner.onclick = () => {
+                newWorker.postMessage({ type: 'CHECK_FOR_UPDATE' });
+                window.location.reload();
+              };
+              document.body.appendChild(updateBanner);
+            }
+          });
+        });
+      }).catch(err => console.error("Error al registrar Service Worker:", err));
+    }
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
