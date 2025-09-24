@@ -1,4 +1,6 @@
-const CACHE_NAME = "inventario-cache-v1";
+// Nombre del cache (incrementa la versión cuando hagas cambios importantes)
+const CACHE_NAME = "inventario-cache-v3";
+
 const urlsToCache = [
   "./",
   "./index.html",
@@ -9,7 +11,7 @@ const urlsToCache = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ];
 
-// Instalación: cacheamos los recursos
+// Instalación: cache inicial
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -18,7 +20,7 @@ self.addEventListener("install", event => {
   );
 });
 
-// Activación: limpiar caches viejos
+// Activación: borrar caches antiguos
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -31,11 +33,27 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// Fetch: responder con cache o red
+// Fetch: network-first
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(resp => {
-      return resp || fetch(event.request).catch(() => caches.match("./index.html"));
-    })
+    fetch(event.request)
+      .then(response => {
+        // Actualiza cache
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      })
+      .catch(() => {
+        // Offline: sirve cache
+        return caches.match(event.request).then(resp => resp || caches.match("./index.html"));
+      })
   );
+});
+
+// Detectar nueva versión y enviar mensaje a la app
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'CHECK_FOR_UPDATE') {
+    self.skipWaiting();
+  }
 });
